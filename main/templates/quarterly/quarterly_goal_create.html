@@ -1,0 +1,18 @@
+<!-- goals/templates/quarterly_goal_create.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Quarterly Goal</title>
+</head>
+<body>
+    <h1>Create a New Quarterly Goal</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+
+    <p><a href="{% url 'quarterly_goals_list' %}">Back to Quarterly Goals</a></p>
+</body>
+</html>

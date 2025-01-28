@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <p>Welcome to your PGOS Home Page!</p>
+  <p>
+    <a href="{% url 'quarterly_goals_list' %}">Quarterly Goals</a>
+  </p>
+{% endblock %}

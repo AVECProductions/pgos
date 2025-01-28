@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}PGOS{% endblock %}</title>
+  <!-- Load static files -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'main/style.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="container-center">
+    <!-- Optional header or nav bar at the top -->
+    <div class="header">
+      <h1>My PGOS App</h1>
+    </div>
+
+    <!-- The main content area -->
+    {% block content %}
+    {% endblock %}
+  </div>
+</body>
+</html>

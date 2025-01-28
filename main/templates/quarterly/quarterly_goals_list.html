@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Quarterly Goals{% endblock %}
+
+{% block content %}
+  <h2>My Quarterly Goals</h2>
+
+  <p>
+    <a href="{% url 'quarterly_goal_create' %}">
+      Add a New Quarterly Goal
+    </a>
+  </p>
+
+  <ul>
+    {% for g in goals %}
+      <li>
+        <strong>Q{{ g.quarter }} - {{ g.title }}</strong><br>
+        {{ g.start_date }} to {{ g.end_date }}
+      </li>
+    {% empty %}
+      <li>No quarterly goals yet!</li>
+    {% endfor %}
+  </ul>
+
+  <p><a href="{% url 'home' %}">Back to Home</a></p>
+{% endblock %}
