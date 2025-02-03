@@ -47,7 +47,7 @@ class QuarterlyGoal(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Q{self.quarter} {self.yearly_goal} - {self.title}"
+        return f"Q{self.quarter} {self.yearly_goal} - {self.life_sector}"
 
 class KPI(models.Model):
     """

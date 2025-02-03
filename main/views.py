@@ -41,20 +41,21 @@ def home_view(request):
 @login_required
 def quarterly_goals_list(request):
     """
-    Displays the user's quarterly goals grouped by title (life sector).
+    Displays the user's quarterly goals grouped by life sector.
     """
     user = request.user
     goals = QuarterlyGoal.objects.filter(user=user).order_by('life_sector', 'start_date')
 
-    # Group goals by title (life sector)
+    # Group goals by life_sector
     grouped_goals = defaultdict(list)
     for goal in goals:
         grouped_goals[goal.life_sector].append(goal)
 
-    context = {
-        'grouped_goals': grouped_goals,
-    }
-    return render(request, 'quarterly/quarterly_goals_list.html', context)
+    # Debugging output
+    print(f"Goals for user {user.username}: {goals}")
+    print(f"Grouped goals: {grouped_goals}")
+
+    return render(request, 'quarterly/quarterly_goals_list.html', {'grouped_goals': grouped_goals})
 
 # goals/views.py (continued)
 
