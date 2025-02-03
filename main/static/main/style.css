@@ -1,52 +1,92 @@
 /*
-   style.css
-   Minimal, mobile-friendly design: black background, white text,
-   center content, simple form styling with grey borders.
+   style.css - Minimal, mobile-friendly black theme
 */
 
-/* Make the entire page fill the screen with black background, white text */
+/* Reset styles */
 html, body {
     margin: 0;
     padding: 0;
-    background-color: #000; /* black */
-    color: #fff;            /* white text */
+    background-color: #000; /* Black background */
+    color: #fff;            /* White text */
     font-family: 'Helvetica', 'Arial', sans-serif;
     height: 100%;
+    width: 100%;
 }
 
 /* Ensure content scales nicely on mobile */
-@viewport {
-    width: device-width;
-    zoom: 1.0;
-}
 @media screen and (max-width: 768px) {
     html {
         font-size: 16px;
     }
 }
 
-/* Flex container to center everything both horizontally & vertically */
+/* Header Styles */
+.header {
+    width: 100%;
+    height: 50px;
+    background-color: #111; /* Slightly lighter black */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    border-bottom: 1px solid #444; /* Subtle bottom border */
+    box-sizing: border-box;
+}
+
+/* Header Title (Centered) */
+.header-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Right Section for Login/Logout */
+.header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between username and button */
+}
+
+/* Username Styling */
+.username {
+    font-size: 14px;
+    font-weight: normal;
+    color: #fff;
+}
+
+/* Links inside the header */
+.header a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.header a:hover {
+    color: #ddd;
+}
+
+/* Center Content (excluding header) */
 .container-center {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;  /* full viewport height */
+    min-height: 100vh; /* Full viewport height */
     width: 100%;
     box-sizing: border-box;
     padding: 1rem;
+    padding-top: 60px; /* Adjusted for fixed header */
 }
 
-/* A simple header bar at the top if desired */
-.header {
-    width: 100%;
-    text-align: center;
-    font-size: 1.5rem;
-    padding: 1rem;
-    border-bottom: 1px solid #888; /* subtle grey border */
-}
-
-/* Basic form styling with grey borders */
+/* Forms */
 form {
     border: 1px solid #555;
     padding: 1rem;
@@ -54,7 +94,7 @@ form {
     margin: 1rem 0;
     max-width: 400px;
     width: 100%;
-    background-color: #111; /* slightly lighter than black */
+    background-color: #111;
 }
 
 form label {
@@ -88,7 +128,7 @@ form button:hover {
     background-color: #444;
 }
 
-/* Minimal link styling */
+/* Links */
 a {
     color: #fff;
     text-decoration: underline;
@@ -97,4 +137,45 @@ a {
 a:hover {
     color: #ccc;
     text-decoration: none;
+}
+
+/* Section Links */
+.section-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Buttons */
+.button {
+    display: inline-block;
+    width: 200px; /* Fixed width for consistent size */
+    padding: 10px 20px; /* Padding for comfortable click area */
+    font-size: 16px;
+    text-align: center;
+    color: #fff;
+    background-color: #333;
+    text-decoration: none;
+    border-radius: 5px;
+    border: 1px solid #444;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover {
+    background-color: #444;
+    transform: scale(1.05);
+}
+
+.button:active {
+    background-color: #555;
+    transform: scale(0.95);
+}
+
+/* Center the text inside the button */
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

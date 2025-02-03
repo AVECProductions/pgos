@@ -33,9 +33,13 @@ class QuarterlyGoal(models.Model):
     E.g., "Lose 5 lbs each quarter", "Save $2,000 each quarter", etc.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    yearly_goal = models.ForeignKey(YearlyGoal, on_delete=models.CASCADE)
+    yearly_goal = models.ForeignKey(
+        'YearlyGoal',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True)  # Allows the admin form to work without requiring this field
     quarter = models.PositiveSmallIntegerField()  # 1, 2, 3, or 4
-    title = models.CharField(max_length=200)
+    life_sector = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     start_date = models.DateField()
     end_date = models.DateField()

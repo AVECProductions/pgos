@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import QuarterlyGoal
 from django.contrib import messages
+from collections import defaultdict
 
 # Decorators
 def role_required(role):
@@ -36,16 +37,22 @@ def home_view(request):
     """
     return render(request, 'main/home.html')
 
+
 @login_required
 def quarterly_goals_list(request):
     """
-    Displays a list of the current user's quarterly goals.
+    Displays the user's quarterly goals grouped by title (life sector).
     """
     user = request.user
-    goals = QuarterlyGoal.objects.filter(user=user).order_by('start_date')
+    goals = QuarterlyGoal.objects.filter(user=user).order_by('life_sector', 'start_date')
+
+    # Group goals by title (life sector)
+    grouped_goals = defaultdict(list)
+    for goal in goals:
+        grouped_goals[goal.life_sector].append(goal)
 
     context = {
-        'goals': goals
+        'grouped_goals': grouped_goals,
     }
     return render(request, 'quarterly/quarterly_goals_list.html', context)
 
@@ -56,23 +63,48 @@ from .forms import QuarterlyGoalForm
 @login_required
 def quarterly_goal_create(request):
     """
-    Shows a form to create a new QuarterlyGoal and saves it on POST.
+    Create a new Quarterly Goal for the active quarter.
     """
+    # Determine the active quarter
+    current_date = now().date()
+    current_month = current_date.month
+    if 1 <= current_month <= 3:
+        quarter = 1
+        end_date = current_date.replace(month=3, day=31)
+    elif 4 <= current_month <= 6:
+        quarter = 2
+        end_date = current_date.replace(month=6, day=30)
+    elif 7 <= current_month <= 9:
+        quarter = 3
+        end_date = current_date.replace(month=9, day=30)
+    else:
+        quarter = 4
+        end_date = current_date.replace(month=12, day=31)
+
+    start_date = current_date
+
     if request.method == 'POST':
         form = QuarterlyGoalForm(request.POST)
         if form.is_valid():
-            # Create an instance but don't save yet
             new_goal = form.save(commit=False)
-            # Assign the user to the new goal
             new_goal.user = request.user
+            new_goal.quarter = quarter
+            new_goal.start_date = start_date
+            new_goal.end_date = end_date
+            new_goal.yearly_goal = None  # Set yearly goal to null for now
             new_goal.save()
-
             messages.success(request, "Quarterly Goal created!")
             return redirect('quarterly_goals_list')
     else:
         form = QuarterlyGoalForm()
 
-    return render(request, 'quarterly/quarterly_goal_create.html', {'form': form})
+    context = {
+        'form': form,
+        'quarter': quarter,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    return render(request, 'quarterly/quarterly_goal_create.html', context)
 
 
 
@@ -127,3 +159,6 @@ def member_profile(request):
         "user": request.user,  # so template can do {{ user.first_name }}, etc.
     }
     return render(request, "member/profile.html", context)
+
+def coming_soon(request):
+    return render(request, 'main/coming_soon.html')

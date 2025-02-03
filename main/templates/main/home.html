@@ -2,8 +2,12 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  <p>Welcome to your PGOS Home Page!</p>
-  <p>
-    <a href="{% url 'quarterly_goals_list' %}">Quarterly Goals</a>
-  </p>
+  <h2>Welcome to your PGOS Home Page!</h2>
+
+  <div class="section-links">
+    <a href="{% url 'quarterly_goals_list' %}" class="button">Quarterly Goals</a>
+    <a href="{% url 'coming_soon' %}" class="button">Vision Update</a>
+    <a href="{% url 'coming_soon' %}" class="button">KPI Tracking</a>
+    <a href="{% url 'coming_soon' %}" class="button">Journaling</a>
+  </div>
 {% endblock %}

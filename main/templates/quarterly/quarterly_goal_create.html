@@ -1,18 +1,91 @@
-<!-- goals/templates/quarterly_goal_create.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Quarterly Goal</title>
-</head>
-<body>
-    <h1>Create a New Quarterly Goal</h1>
+{% extends 'base.html' %}
+{% block title %}Create Quarterly Goal{% endblock %}
 
-    <form method="POST">
+{% block content %}
+  <style>
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+    }
+
+    .form-box {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+        background-color: #111;
+        border-radius: 8px;
+        border: 1px solid #444;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .form-box h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 20px;
+        color: #fff;
+    }
+
+    form label {
+        font-weight: bold;
+        color: #ddd;
+        margin-bottom: 5px;
+    }
+
+    form input, form textarea {
+        width: 100%;
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #444;
+        border-radius: 4px;
+        background-color: #222;
+        color: #fff;
+    }
+
+    form button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #333;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    form button:hover {
+        background-color: #444;
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .back-link a {
+        color: #ddd;
+        text-decoration: underline;
+    }
+
+    .back-link a:hover {
+        color: #fff;
+    }
+  </style>
+
+  <div class="form-container">
+    <div class="form-box">
+      <h2>Create a New Quarterly Goal</h2>
+      <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
+        <input type="hidden" name="quarter" value="{{ quarter }}">
+        <input type="hidden" name="start_date" value="{{ start_date }}">
+        <input type="hidden" name="end_date" value="{{ end_date }}">
         <button type="submit">Save</button>
-    </form>
-
-    <p><a href="{% url 'quarterly_goals_list' %}">Back to Quarterly Goals</a></p>
-</body>
-</html>
+      </form>
+    </div>
+  </div>
+{% endblock %}

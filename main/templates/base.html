@@ -3,19 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}PGOS{% endblock %}</title>
-  <!-- Load static files -->
   {% load static %}
   <link rel="stylesheet" href="{% static 'main/style.css' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <div class="container-center">
-    <!-- Optional header or nav bar at the top -->
-    <div class="header">
-      <h1>My PGOS App</h1>
+  <!-- Fixed Top Header -->
+  <div class="header">
+    <!-- Username Display -->
+    <div class="header-right">
+      {% if user.is_authenticated %}
+        <span class="username">{{ user.username }}</span>
+        <a href="{% url 'logout' %}" class="auth-link">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="auth-link">Login</a>
+      {% endif %}
     </div>
 
-    <!-- The main content area -->
+    <!-- Centered Title -->
+    <div class="header-title">
+      <a href="{% url 'home' %}">myPGOS</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container-center">
     {% block content %}
     {% endblock %}
   </div>

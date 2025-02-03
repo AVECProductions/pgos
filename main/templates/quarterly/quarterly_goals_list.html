@@ -2,24 +2,83 @@
 {% block title %}Quarterly Goals{% endblock %}
 
 {% block content %}
+  <style>
+    /* Page-specific styles for Quarterly Goals */
+    .goal-table {
+        margin-top: 20px;
+    }
+
+    .goal-group {
+        margin-bottom: 30px;
+    }
+
+    .goal-group h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #ddd;
+        border-bottom: 1px solid #444;
+        padding-bottom: 5px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    table thead {
+        background-color: #333;
+        color: #fff;
+    }
+
+    table th, table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #444;
+    }
+
+    table tr:hover {
+        background-color: #222;
+    }
+  </style>
+
   <h2>My Quarterly Goals</h2>
 
+  <!-- Add a new goal button -->
   <p>
-    <a href="{% url 'quarterly_goal_create' %}">
-      Add a New Quarterly Goal
-    </a>
+    <a href="{% url 'quarterly_goal_create' %}" class="button">Add a New Quarterly Goal</a>
   </p>
 
-  <ul>
-    {% for g in goals %}
-      <li>
-        <strong>Q{{ g.quarter }} - {{ g.title }}</strong><br>
-        {{ g.start_date }} to {{ g.end_date }}
-      </li>
-    {% empty %}
-      <li>No quarterly goals yet!</li>
-    {% endfor %}
-  </ul>
-
-  <p><a href="{% url 'home' %}">Back to Home</a></p>
+  <!-- Goals grouped by title -->
+  {% if grouped_goals %}
+    <div class="goal-table">
+      {% for life_sector, goals in grouped_goals.items %}
+        <div class="goal-group">
+          <h3>{{ life_sector }}</h3> <!-- Life sector (e.g., "Health and Wellness") -->
+          <table>
+            <thead>
+              <tr>
+                <th>Quarter</th>
+                <th>Goal</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for goal in goals %}
+                <tr>
+                  <td>Q{{ goal.quarter }}</td>
+                  <td>{{ goal.life_sector }}</td>
+                  <td>{{ goal.start_date }}</td>
+                  <td>{{ goal.end_date }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No quarterly goals yet!</p>
+  {% endif %}
 {% endblock %}
