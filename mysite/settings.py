@@ -55,9 +55,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
+
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'djoser',
+    'simple_history',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -163,3 +174,31 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'  # This is a fixed value for SendGrid
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY  # Use the API key as the password
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')  # Replace with your preferred sender email
+
+# For development only
+CORS_ALLOW_ALL_ORIGINS = True  # Don't use this in production!
+
+# For production, use this instead:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "http://your-production-domain.com",
+# ]
+
+# Add these settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

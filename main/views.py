@@ -7,9 +7,20 @@ from django.utils.timezone import localtime, now, timedelta, make_aware
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import QuarterlyGoal
+from .models import QuarterlyGoal, Vision, RICHItem, JournalEntry
 from django.contrib import messages
 from collections import defaultdict
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import YearlyGoal, KPI, KPIRecord, UserProfile
+from .serializers import (YearlyGoalSerializer, QuarterlyGoalSerializer,
+                         KPISerializer, KPIRecordSerializer, UserProfileSerializer,
+                         VisionSerializer, RICHItemSerializer, JournalEntrySerializer)
+from django.db.models import Count
+from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Decorators
 def role_required(role):
@@ -163,3 +174,190 @@ def member_profile(request):
 
 def coming_soon(request):
     return render(request, 'main/coming_soon.html')
+
+class UserProfileViewSet(viewsets.ModelViewSet):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+
+    def list(self, request):
+        """Override list to return only the current user's profile"""
+        serializer = self.get_serializer(request.user.profile)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        """Override retrieve to ensure users can only access their own profile"""
+        if str(request.user.id) != pk:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().retrieve(request, pk)
+
+class YearlyGoalViewSet(viewsets.ModelViewSet):
+    serializer_class = YearlyGoalSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['title', 'description']
+    filterset_fields = ['start_date', 'end_date']
+
+    def get_queryset(self):
+        return YearlyGoal.objects.filter(user=self.request.user)
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        goal = self.get_object()
+        history = []
+        for record in goal.history.all():
+            changes = {}
+            if record.prev_record:
+                delta = record.diff_against(record.prev_record)
+                changes = {
+                    change.field: {
+                        'from': change.old,
+                        'to': change.new
+                    }
+                    for change in delta.changes
+                }
+            
+            history.append({
+                'user': record.history_user.username if record.history_user else 'System',
+                'created_at': record.history_date,
+                'changes': changes
+            })
+        return Response(history)
+
+class QuarterlyGoalViewSet(viewsets.ModelViewSet):
+    serializer_class = QuarterlyGoalSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['life_sector', 'description']
+    filterset_fields = ['quarter', 'yearly_goal']
+
+    def get_queryset(self):
+        return QuarterlyGoal.objects.filter(user=self.request.user)
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        goal = self.get_object()
+        history = []
+        for record in goal.history.all():
+            changes = {}
+            if record.prev_record:
+                delta = record.diff_against(record.prev_record)
+                changes = {
+                    change.field: {
+                        'from': change.old,
+                        'to': change.new
+                    }
+                    for change in delta.changes
+                }
+            
+            history.append({
+                'user': record.history_user.username if record.history_user else 'System',
+                'created_at': record.history_date,
+                'changes': changes
+            })
+        return Response(history)
+
+class KPIViewSet(viewsets.ModelViewSet):
+    serializer_class = KPISerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['name', 'description']
+    filterset_fields = ['frequency', 'quarterly_goal']
+
+    def get_queryset(self):
+        print(f"Fetching KPIs for user {self.request.user.username}")  # Add debug print
+        queryset = KPI.objects.filter(user=self.request.user)
+        print(f"Found {queryset.count()} KPIs")  # Add debug print
+        return queryset
+
+    @action(detail=True, methods=['get'])
+    def progress(self, request, pk=None):
+        kpi = self.get_object()
+        return Response({
+            'progress': kpi.get_progress(),
+            'recent_records': KPIRecordSerializer(
+                kpi.get_recent_records(), many=True).data
+        })
+
+class KPIRecordViewSet(viewsets.ModelViewSet):
+    serializer_class = KPIRecordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['entry_date', 'kpi']
+
+    def get_queryset(self):
+        return KPIRecord.objects.filter(kpi__quarterly_goal__user=self.request.user)
+
+class DashboardViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        user = request.user
+        now = timezone.now()
+        last_month = now - timedelta(days=30)
+
+        stats = {
+            'activeGoals': QuarterlyGoal.objects.filter(user=user, end_date__gte=now).count(),
+            'kpisTracked': KPI.objects.filter(user=user).count(),
+            'journalEntries': JournalEntry.objects.filter(user=user).count(),
+            'richItems': RICHItem.objects.filter(user=user, retired=False).count(),
+        }
+
+        recent_activity = []
+        # Add recent goals
+        for goal in QuarterlyGoal.objects.filter(user=user, created_at__gte=last_month):
+            recent_activity.append({
+                'id': f'goal_{goal.id}',
+                'date': goal.created_at,
+                'description': f'Created new quarterly goal: {goal.life_sector}'
+            })
+        # Add recent KPI records
+        for record in KPIRecord.objects.filter(kpi__user=user, created_at__gte=last_month):
+            recent_activity.append({
+                'id': f'kpi_{record.id}',
+                'date': record.created_at,
+                'description': f'Tracked KPI {record.kpi.name}: {record.value} {record.kpi.unit}'
+            })
+        # Sort by date
+        recent_activity.sort(key=lambda x: x['date'], reverse=True)
+
+        return Response({
+            'stats': stats,
+            'recent_activity': recent_activity[:10]  # Last 10 activities
+        })
+
+class VisionViewSet(viewsets.ModelViewSet):
+    serializer_class = VisionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Vision.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class RICHItemViewSet(viewsets.ModelViewSet):
+    serializer_class = RICHItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_fields = ['rich_type', 'retired']
+    search_fields = ['title', 'description']
+
+    def get_queryset(self):
+        return RICHItem.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class JournalEntryViewSet(viewsets.ModelViewSet):
+    serializer_class = JournalEntrySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_fields = ['created_at']
+    search_fields = ['title', 'content_html']
+
+    def get_queryset(self):
+        return JournalEntry.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
