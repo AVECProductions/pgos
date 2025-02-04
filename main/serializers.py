@@ -1,5 +1,9 @@
 from rest_framework import serializers
 from .models import YearlyGoal, QuarterlyGoal, KPI, KPIRecord, UserProfile, Vision, RICHItem, JournalEntry
+from djoser.serializers import UserCreateSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,4 +88,20 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalEntry
         fields = ['id', 'title', 'content_html', 'created_at', 'updated_at']
-        read_only_fields = ['created_at', 'updated_at'] 
+        read_only_fields = ['created_at', 'updated_at']
+
+class CustomUserCreateSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        model = User
+        fields = ('id', 'email', 'username', 'password')
+        
+    def validate(self, attrs):
+        # Add custom validation here
+        print("Received data:", attrs)  # Add this for debugging
+        return super().validate(attrs)
+        
+    def create(self, validated_data):
+        print("Creating user with data:", validated_data)  # Add this for debugging
+        user = User.objects.create_user(**validated_data)
+        # Add any additional setup for new users here
+        return user 
