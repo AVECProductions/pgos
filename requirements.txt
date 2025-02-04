@@ -1,17 +1,25 @@
-asgiref==3.8.1
-dj-database-url==2.3.0
-Django>=4.2.0
-gunicorn==23.0.0
-psycopg2-binary>=2.9.6
-python-decouple==3.8
-sqlparse==0.5.3
-typing_extensions==4.12.2
-tzdata==2025.1
-whitenoise==6.8.2
-djangorestframework>=3.14.0
-djangorestframework-simplejwt>=5.2.2
-django-cors-headers>=4.0.0
-python-dotenv>=1.0.0
-django-filter>=23.2
-Pillow>=9.5.0
-django-rich-text-field>=1.0.1
+# Django and REST Framework
+Django==5.0.1
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
+django-cors-headers==4.3.1
+
+# Database
+psycopg2-binary==2.9.9
+
+# Environment variables
+python-dotenv==1.0.0
+
+# WSGI server for production
+gunicorn==21.2.0
+
+# Filtering and API features
+django-filter==23.5
+django-reversion==5.0.8
+
+# Date/Time handling
+pytz==2023.3
+
+# Production dependencies
+whitenoise==6.6.0  # For serving static files
+dj-database-url==2.1.0  # For database URL configuration
