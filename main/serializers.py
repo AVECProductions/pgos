@@ -87,7 +87,7 @@ class RICHItemSerializer(serializers.ModelSerializer):
 class JournalEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalEntry
-        fields = ['id', 'title', 'content_html', 'created_at', 'updated_at']
+        fields = ['id', 'content_html', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
 class CustomUserCreateSerializer(UserCreateSerializer):

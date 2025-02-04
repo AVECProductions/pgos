@@ -48,6 +48,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(JournalEntry)
 class JournalEntryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('title', 'content_html')
+    list_display = ['user', 'created_at', 'updated_at']
+    list_filter = ['user', 'created_at']
+    search_fields = ['content_html']
+    ordering = ['-created_at']

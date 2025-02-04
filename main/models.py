@@ -279,15 +279,13 @@ class JournalEntry(models.Model):
     """
     Represents a journal entry with rich text content
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
     content_html = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     class Meta:
-        ordering = ['-created_at']
-        verbose_name_plural = 'Journal entries'
+        ordering = ['-created_at']  # Show newest entries first
 
     def __str__(self):
-        return f"{self.user.username}'s Entry - {self.title}"
+        return f"{self.user.username}'s Entry - {self.created_at}"
