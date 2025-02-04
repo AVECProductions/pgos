@@ -118,7 +118,6 @@ class KPI(models.Model):
         blank=True
     )
     name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='daily')
     target_value = models.FloatField(default=0)
     unit = models.CharField(max_length=50, default='units')
@@ -155,27 +154,21 @@ class KPI(models.Model):
 
 class KPIRecord(models.Model):
     """
-    Records an instance of completing or progressing towards a KPI on a particular date.
-    E.g., "On 2025-01-15, user did 3 out of 5 miles of running."
+    Records daily progress for KPIs
     """
-    kpi = models.ForeignKey(KPI, on_delete=models.CASCADE, related_name='records')
+    kpi = models.ForeignKey(KPI, related_name='records', on_delete=models.CASCADE)
     entry_date = models.DateField()
-    value = models.FloatField(default=0)
-        # if you track partial values (miles, minutes, etc.)
-    notes = models.TextField(blank=True)  # optional reflection or details
-
+    value = models.FloatField()
+    notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('kpi', 'entry_date')
+        ordering = ['-entry_date']
+        # Add unique constraint to prevent multiple records for same KPI and date
+        unique_together = ['kpi', 'entry_date']
 
     def __str__(self):
-        return f"{self.kpi.name} on {self.entry_date}: {self.value}"
-
-    def clean(self):
-        # Add validation for value based on KPI type
-        if self.value < 0:
-            raise ValidationError('Value cannot be negative')
+        return f"{self.kpi.name} - {self.entry_date}: {self.value}"
 
 
 # ----------------------------------------------------------------------------------

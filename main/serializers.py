@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import YearlyGoal, QuarterlyGoal, KPI, KPIRecord, UserProfile, Vision, RICHItem, JournalEntry
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth import get_user_model
+from datetime import date
 
 User = get_user_model()
 
@@ -17,18 +18,55 @@ class KPIRecordSerializer(serializers.ModelSerializer):
         fields = ['id', 'kpi', 'entry_date', 'value', 'notes', 'created_at']
         read_only_fields = ['created_at']
 
+    def validate(self, data):
+        # Validate that entry_date is a valid date
+        if not isinstance(data.get('entry_date'), (str, date)):
+            raise serializers.ValidationError({"entry_date": "Invalid date format"})
+        
+        # Validate that value is a number
+        try:
+            float(data.get('value'))
+        except (TypeError, ValueError):
+            raise serializers.ValidationError({"value": "Value must be a number"})
+
+        # Validate that the KPI exists and belongs to the user
+        kpi = data.get('kpi')
+        if not kpi:
+            raise serializers.ValidationError({"kpi": "KPI is required"})
+
+        request = self.context.get('request')
+        if request and not kpi.user == request.user:
+            raise serializers.ValidationError({"kpi": "Invalid KPI"})
+
+        return data
+
+    def create(self, validated_data):
+        try:
+            # Try to get existing record
+            record = KPIRecord.objects.get(
+                kpi=validated_data['kpi'],
+                entry_date=validated_data['entry_date']
+            )
+            # Update existing record
+            for key, value in validated_data.items():
+                setattr(record, key, value)
+            record.save()
+            return record
+        except KPIRecord.DoesNotExist:
+            # Create new record
+            return super().create(validated_data)
+
 class KPISerializer(serializers.ModelSerializer):
     recent_records = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
 
     class Meta:
         model = KPI
-        fields = ['id', 'quarterly_goal', 'name', 'description', 'frequency',
+        fields = ['id', 'quarterly_goal', 'name', 'frequency',
                  'target_value', 'unit', 'recent_records', 'progress']
         read_only_fields = ['user']
         extra_kwargs = {
             'name': {'required': True},
-            'description': {'required': True},
             'frequency': {'required': True},
             'target_value': {'required': True},
             'unit': {'required': True},
