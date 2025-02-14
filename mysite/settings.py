@@ -173,7 +173,27 @@ EMAIL_HOST_PASSWORD = SENDGRID_API_KEY  # Use the API key as the password
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')  # Replace with your preferred sender email
 
 # For development only
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False  # Disable this in production
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-webhook-signature',  # Add this for the webhook signature
+]
 
 # For production, use this instead:
 # CORS_ALLOWED_ORIGINS = [

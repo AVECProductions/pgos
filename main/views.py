@@ -246,16 +246,14 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def journal_webhook(request):
-    """
-    Webhook endpoint for receiving journal entries from ElevenLabs agent.
-    Expects a payload with:
-    {
-        "content_html": "string",
-        "signature": "string"  # HMAC signature for verification
-    }
-    """
+    """Webhook endpoint for receiving journal entries from ElevenLabs agent."""
+    # Add detailed logging
+    logger.info(f"Received webhook request from: {request.META.get('REMOTE_ADDR')}")
+    logger.info(f"Headers: {dict(request.headers)}")
+    
     # Get the raw body for signature verification
     raw_body = request.body.decode('utf-8')
+    logger.info(f"Request body: {raw_body}")
     
     # Verify webhook signature if provided
     signature = request.headers.get('X-Webhook-Signature')
@@ -267,34 +265,34 @@ def journal_webhook(request):
         ).hexdigest()
         
         if not hmac.compare_digest(signature, expected_signature):
+            logger.error("Invalid signature")
             return HttpResponse('Invalid signature', status=401)
     
     try:
         data = json.loads(raw_body)
-        
-        # Extract content from the payload
         content_html = data.get('content_html')
         
         if not content_html:
+            logger.error("Missing content_html in payload")
             return HttpResponse('Missing required fields', status=400)
         
-        # Create journal entry for the default user (for testing/development)
         try:
-            # Get the first user for testing purposes
-            # In production, you would want to handle this differently
-            user = 1
-            JournalEntry.objects.create(
-                user_id=user,
+            # Use user ID 1 for now (update this based on your needs)
+            user_id = 1
+            entry = JournalEntry.objects.create(
+                user_id=user_id,
                 content_html=content_html
             )
+            logger.info(f"Created journal entry: {entry.id}")
             return HttpResponse('Journal entry created', status=201)
             
         except Exception as e:
             logger.error(f"Error creating journal entry: {str(e)}")
             return HttpResponse('Error creating journal entry', status=500)
             
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON payload: {str(e)}")
         return HttpResponse('Invalid JSON payload', status=400)
     except Exception as e:
-        logger.error(f"Error processing webhook: {str(e)}")
+        logger.error(f"Unexpected error: {str(e)}")
         return HttpResponse('Internal server error', status=500)
