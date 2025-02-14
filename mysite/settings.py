@@ -41,11 +41,7 @@ ADMIN_URL = config('ADMIN_URL')
 
 
 # Get security stuff
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '.ngrok.io',  # Allow ngrok domains
-]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS").split(",")
 
 # Application definition
