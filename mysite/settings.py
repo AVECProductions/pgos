@@ -62,10 +62,7 @@ INSTALLED_APPS = [
     'simple_history',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "https://*.ngrok.io",  # Allow ngrok domains
-]
+CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS").split(",")
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
