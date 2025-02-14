@@ -1,6 +1,5 @@
 # goals/urls.py
 
-from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -11,7 +10,7 @@ from .views import (
     YearlyGoalViewSet, QuarterlyGoalViewSet,
     KPIViewSet, KPIRecordViewSet, UserProfileViewSet,
     DashboardViewSet, VisionViewSet, RICHItemViewSet,
-    JournalEntryViewSet
+    JournalEntryViewSet, journal_webhook
 )
 
 router = DefaultRouter()
@@ -26,12 +25,15 @@ router.register(r'users/profile', UserProfileViewSet, basename='user-profile')
 router.register(r'journal', JournalEntryViewSet, basename='journal')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    
     # JWT Authentication endpoints
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
-    # API endpoints for each feature
-    path('', include(router.urls)),
+    # Group all API endpoints under /api/
+    path('api/', include([
+        # Router URLs
+        path('', include(router.urls)),
+        # Webhook endpoint
+        path('webhooks/journal/', journal_webhook, name='journal-webhook'),
+    ])),
 ]

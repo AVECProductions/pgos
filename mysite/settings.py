@@ -14,7 +14,6 @@ from pathlib import Path
 import os
 from decouple import config
 import dj_database_url
-from distutils.util import strtobool
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(strtobool(config('DEBUG', default='False')))
+DEBUG = config('DEBUG', default='False').lower() == 'true'
 
 # Get Domain
 DOMAIN = config("DOMAIN")
@@ -42,7 +41,11 @@ ADMIN_URL = config('ADMIN_URL')
 
 
 # Get security stuff
-ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.ngrok.io',  # Allow ngrok domains
+]
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS").split(",")
 
 # Application definition
@@ -65,6 +68,7 @@ INSTALLED_APPS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
+    "https://*.ngrok.io",  # Allow ngrok domains
 ]
 
 MIDDLEWARE = [
@@ -176,7 +180,7 @@ EMAIL_HOST_PASSWORD = SENDGRID_API_KEY  # Use the API key as the password
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')  # Replace with your preferred sender email
 
 # For development only
-CORS_ALLOW_ALL_ORIGINS = True  # Don't use this in production!
+CORS_ALLOW_ALL_ORIGINS = True
 
 # For production, use this instead:
 # CORS_ALLOWED_ORIGINS = [
@@ -217,3 +221,6 @@ DJOSER = {
     'HIDE_USERS': False,
     'TOKEN_MODEL': None,  # We're using JWT tokens
 }
+
+# Add this to your settings.py
+ELEVENLABS_WEBHOOK_SECRET = '1234567890'  # Change this to a secure random string

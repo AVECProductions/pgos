@@ -5,10 +5,16 @@ from django.conf.urls.static import static
 from decouple import config
 
 urlpatterns = [
-    path(config('ADMIN_URL'), admin.site.urls),
+    # Admin URL with custom path from settings
+    path(f'{settings.ADMIN_URL}/', admin.site.urls),
     
-    # API Endpoints
-    path('api/', include('main.urls')),
+    # Include all URLs from main app
+    path('', include('main.urls')),  # This is important!
+    
+    # Auth URLs
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # Media files in development
+    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

@@ -3,7 +3,7 @@ from django.utils.timezone import localtime, now, timedelta, make_aware
 from .models import QuarterlyGoal, Vision, RICHItem, JournalEntry
 
 from rest_framework import viewsets, permissions, filters, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import YearlyGoal, KPI, KPIRecord, UserProfile
@@ -14,6 +14,12 @@ from django.db.models import Count
 from django.utils import timezone
 from django.contrib.auth.models import User
 import logging
+from rest_framework.permissions import AllowAny
+from django.conf import settings
+import hmac
+import hashlib
+import json
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -235,3 +241,60 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def journal_webhook(request):
+    """
+    Webhook endpoint for receiving journal entries from ElevenLabs agent.
+    Expects a payload with:
+    {
+        "content_html": "string",
+        "signature": "string"  # HMAC signature for verification
+    }
+    """
+    # Get the raw body for signature verification
+    raw_body = request.body.decode('utf-8')
+    
+    # Verify webhook signature if provided
+    signature = request.headers.get('X-Webhook-Signature')
+    if signature and hasattr(settings, 'ELEVENLABS_WEBHOOK_SECRET'):
+        expected_signature = hmac.new(
+            settings.ELEVENLABS_WEBHOOK_SECRET.encode(),
+            raw_body.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(signature, expected_signature):
+            return HttpResponse('Invalid signature', status=401)
+    
+    try:
+        data = json.loads(raw_body)
+        
+        # Extract content from the payload
+        content_html = data.get('content_html')
+        
+        if not content_html:
+            return HttpResponse('Missing required fields', status=400)
+        
+        # Create journal entry for the default user (for testing/development)
+        try:
+            # Get the first user for testing purposes
+            # In production, you would want to handle this differently
+            user = 1
+            JournalEntry.objects.create(
+                user_id=user,
+                content_html=content_html
+            )
+            return HttpResponse('Journal entry created', status=201)
+            
+        except Exception as e:
+            logger.error(f"Error creating journal entry: {str(e)}")
+            return HttpResponse('Error creating journal entry', status=500)
+            
+    except json.JSONDecodeError:
+        return HttpResponse('Invalid JSON payload', status=400)
+    except Exception as e:
+        logger.error(f"Error processing webhook: {str(e)}")
+        return HttpResponse('Internal server error', status=500)
