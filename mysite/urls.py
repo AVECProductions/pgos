@@ -15,6 +15,9 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     
+    # New recipe management URLs
+    path('api/recipes/', include('recipes.urls')),  # Make sure this matches your frontend URL
+    
     # Media files in development
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ]

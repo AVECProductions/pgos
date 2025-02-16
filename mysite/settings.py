@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'simple_history',
+    'recipes',
 ]
 
 CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS").split(",")
@@ -237,3 +238,6 @@ DJOSER = {
 
 # Add this to your settings.py
 ELEVENLABS_WEBHOOK_SECRET = '1234567890'  # Change this to a secure random string
+
+# Add this near your other settings
+OPENAI_API_KEY = config('OPENAI_API_KEY')
